@@ -15,6 +15,10 @@ import xgboost as xgb
 from lightgbm import LGBMClassifier
 from xgboost import XGBClassifier
 import sweetviz as sv
+import streamlit as st
+import joblib  # Pour charger le modèle
+
+
 
 # Configuration initiale de Streamlit
 st.sidebar.title("Sommaire")
@@ -148,4 +152,39 @@ def explication_shap(df, df_train):
 
 def outil_decision(df, df_train):
     st.title("Outil de Décision")
-    # Logique de l'outil de décision
+    
+
+    # Chargement du modèle sérialisé
+    model_path = 'best_model.joblib'
+    pipeline = joblib.load(model_path)
+
+    # Extraire le modèle de classification du pipeline
+     
+    classifier_model = pipeline.named_steps['classifier']
+
+    # Préparation des données (comme précédemment)
+    df = pd.read_csv('df_final.csv')  # Remplacez par votre chemin de fichier correct
+    X = df.drop(columns=['TARGET'])
+    y = df['TARGET']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # Initialiser l'explainer SHAP avec le modèle extrait
+    explainer = shap.Explainer(classifier_model, X_train)
+    # Calcul des valeurs SHAP pour l'ensemble d'entraînement (pour les explications globales)
+    shap_values = explainer(X_train)
+
+    # Interface Streamlit
+    st.title("Prédiction de Non-Paiement de Prêt avec le Meilleur Modèle")
+
+    # Explications globales avec SHAP
+    st.header("Importance Globale des Caractéristiques")
+    fig, ax = plt.subplots()
+    shap.summary_plot(shap_values, X_train, plot_type="bar")
+    st.pyplot(fig)
+
+    # Sélection de l'indice de l'observation à expliquer par un utilisateur
+    index_to_explain = st.slider("Sélectionnez l'indice de l'observation à expliquer", 0, len(X_test)-1, 0)
+
+    # Extraction de l'observation spécifique à expliquer
+    observation_to_explain = X_test.iloc[index_to_explain:index_to_explain+1]
+
