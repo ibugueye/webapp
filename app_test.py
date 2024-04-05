@@ -643,6 +643,7 @@ elif page==pages[8]:
                 st.plotly_chart(fig)
       
 """
+
 elif page==pages[9]: 
     
     st.title("L’interprétabilité globale et locale du modèle ") 
@@ -680,6 +681,8 @@ elif page==pages[9]:
     shap.plots.waterfall(shap_values[0], show=True)
     st.pyplot(plt, bbox_inches='tight', pad_inches=0)
     plt.clf()
+
+
 elif page==pages[10]:  
     import streamlit as st
     import pandas as pd
