@@ -28,8 +28,8 @@ pages = ["Contexte du projet", "Exploration des données", "Analyse de données"
 page = st.sidebar.radio("Aller vers la page :", pages)
 
 # Chargement des données
-df= pd.read_csv("data/application_train.csv")
-#df = pd.read_csv("data/df_final.csv")
+#df= pd.read_csv("data/application_train.csv")
+df = pd.read_csv("data/df_final.csv")
 df["CODE_GENDER"].fillna(0, inplace=True)
 
 st.sidebar.title("Sommaire")
