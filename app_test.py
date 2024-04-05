@@ -511,59 +511,87 @@ elif page==pages[7]:
         
         
                 
-elif page==pages[8]:
- 
-  
+elif page==pages[8]:  
+    
+            
+    
+
     # URL of the Flask API
     API_URL = 'https://flask-deploement.onrender.com/prediction'  # Adjust this to the URL of your Flask API
 
     # Interface utilisateur de l'application
     st.title("Application de Prédiction de Défaut de Paiement")
-    
-    
-
-    # Collecting input data through sliders in the sidebar
-    
-    st.sidebar.header("Informations sur le client")
-     
-    input_data = {
-        'SK_ID_CURR': st.sidebar.slider('SK_ID_CURR', min_value=100000, max_value=999999, value=100001, step=1),
-        'CNT_CHILDREN': st.sidebar.slider('CNT_CHILDREN', min_value=0, max_value=20, value=0, step=1),
-        'AMT_INCOME_TOTAL': st.sidebar.slider('AMT_INCOME_TOTAL', min_value=20000, max_value=1000000, value=100000, step=1000),
-        'AMT_CREDIT': st.sidebar.slider('AMT_CREDIT', min_value=50000, max_value=2000000, value=500000, step=10000),
-        # Add other features as necessary...
-    }
-
-    # Button to make prediction
+    st.header("Informations sur le client")
+       
+  # Récupération de la liste des identifiants SK_ID_CURR depuis l'API Flask
     import requests
-    if st.button('Prédire le risque de défaut'):
-        # Sending the data to the Flask API and getting the prediction
-        response = requests.post(API_URL, json=input_data)
-        if response.status_code == 200:
-            # Extracting the prediction results
-            result = response.json()
-            probabilities = result['probabilities']
-            prediction = result['prediction'][0]  # Assuming the first (and only) prediction
-
-            # Assuming `probabilities` is the probability of default returned by your API
-            probability_of_default = probabilities[0]  # The API returns a list with a single probability value
-            probability_of_no_default = 1 - probability_of_default  # Compute the probability of no default
-
-            # Now `probabilities` should contain both values, matching the length of `categories`
-            probabilities = [probability_of_no_default, probability_of_default]
-
-            # Displaying the results in two columns
-            col1, col2 = st.columns(2)
-            with col1:
-                st.subheader("Résultat de la prédiction :")
-                result_message = "Le client sera en défaut de paiement." if prediction == 1 else "Le client ne sera pas en défaut de paiement."
-                st.write(result_message)
-
-                st.subheader("Probabilités :")
-                # Plotting the probability as a bar chart
-                categories = ['Pas de défaut', 'Défaut']
-                fig = px.bar(x=categories, y=probabilities, labels={'x': '', 'y': 'Probabilité'}, title="Probabilité de Défaut de Paiement")
-                st.plotly_chart(fig)
+    response = requests.get("https://flask-deploement.onrender.com/get_ids")
+    if response.status_code == 200:
+       ids = response.json()
+       sk_id_curr = st.sidebar.selectbox('Choisissez SK_ID_CURR pour obtenir des informations détaillées et une prédiction:', ids)
+    else:
+      st.error("Impossible de charger la liste des identifiants SK_ID_CURR.")
+      ids = []
+      sk_id_curr = None
+  
+    if st.sidebar.button('Obtenir la prédiction') and sk_id_curr:
+       data = {'SK_ID_CURR': sk_id_curr}
+       response = requests.post("https://flask-deploement.onrender.com/prediction", json=data)
+          
+       if response.status_code == 200:
+           prediction_data = response.json()
+              
+              # Displaying the results in two columns
+              
+           col1, col2,col3= st.columns([1,1,4])
+              
+              
+             # Affichage des informations et des prédictions
+           st.write(f"Prédiction : {prediction_data['prediction']}, Probabilité : {prediction_data['probability']:.2f}")
+           st.write(f"### Décision basée sur le seuil de 0.44 : {prediction_data['decision']}")
+              
+              
+           with col1:
+                 st.header("Client")
+                 st.write(f"Enfants : {prediction_data['client_children']}")
+                 st.write(f"Revenu: {prediction_data['client_income']}")
+                 st.write(f"Crédit  : {prediction_data['client_credit']}")
+                 st.write(f"Annuité : {prediction_data['client_annuity']}")
+                  
+                  
+                  
+                 
+           with col2:
+                 st.header("Moyen")
+              
+                 st.write(f"Enfants : {prediction_data['mean_children']:.2f}")
+                 st.write(f"Revenu   : {prediction_data['mean_income']:.2f}")
+                 st.write(f"Crédit: {prediction_data['mean_credit']:.2f}")
+                 st.write(f"Annuité  : {prediction_data['mean_annuity']:.2f}")
+                  
+                  
+           with col3:
+                 st.write("### Comparaison, des caracteristuqes clients avec la moyenne")
+                  # Création de la visualisation
+                 fig, ax = plt.subplots()
+                 labels = ["Enfants", "Revenu", "Crédit", "Annuité"]
+                 client_values = [prediction_data['client_children'], prediction_data['client_income'], prediction_data['client_credit'], prediction_data['client_annuity']]
+                 mean_values = [prediction_data['mean_children'], prediction_data['mean_income'], prediction_data['mean_credit'], prediction_data['mean_annuity']]
+                  
+                 x = range(len(labels))  # les labels de l'axe x
+                  
+                 ax.bar(x, client_values, width=0.4, label='Client', align='center')
+                 ax.bar(x, mean_values, width=0.4, label='Moyenne', align='edge')
+                  
+                 ax.set_xlabel('Caractéristiques')
+                 ax.set_ylabel('Valeurs')
+                 ax.set_title('Comparaison des caractéristiques du client avec les moyennes')
+                 ax.set_xticks(x)
+                 ax.set_xticklabels(labels)
+                 ax.legend()
+                  
+                 st.pyplot(fig)
+  
       
 
 
