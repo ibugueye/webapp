@@ -614,7 +614,7 @@ elif page==pages[10]:
     import joblib  # Pour charger le modèle
 
     # Chargement du modèle sérialisé
-    model_path = 'data/best_model.joblib'
+    model_path = 'best_model.joblib'
     pipeline = joblib.load(model_path)
 
     # Extraire le modèle de classification du pipeline
