@@ -589,7 +589,7 @@ elif page==pages[8]:
     
             
     
-"""
+
     # URL of the Flask API
     API_URL = 'https://flask-deploement.onrender.com/prediction'  # Adjust this to the URL of your Flask API
 
@@ -641,7 +641,7 @@ elif page==pages[8]:
                 fig = px.bar(x=categories, y=probabilities, labels={'x': '', 'y': 'Probabilité'}, title="Probabilité de Défaut de Paiement")
                 st.plotly_chart(fig)
       
-"""
+
 
 elif page==pages[9]: 
     
