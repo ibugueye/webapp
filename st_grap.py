@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 st.title('Consultation de Prédiction de Crédit Client')
 
 # Récupération de la liste des identifiants SK_ID_CURR depuis l'API Flask
-response = requests.get("http://127.0.0.1:5000/get_ids")
+response = requests.get("https://flask-deploement.onrender.com/get_ids")
 if response.status_code == 200:
     ids = response.json()
     sk_id_curr = st.selectbox('Choisissez SK_ID_CURR pour obtenir la prédiction, la probabilité, et le nombre d’enfants:', ids)
@@ -17,7 +17,7 @@ else:
 if st.button('Obtenir la prédiction') and sk_id_curr:
     data = {'SK_ID_CURR': sk_id_curr}
     
-    response = requests.post("http://127.0.0.1:5000/prediction", json=data)
+    response = requests.post("https://flask-deploement.onrender.com/prediction", json=data)
     
     if response.status_code == 200:
         prediction_data = response.json()
