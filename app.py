@@ -183,7 +183,7 @@ t
     st.pyplot(fig)
 
     # Sélection de l'indice de l'observation à expliquer par un utilisateur
-    index_to_explain = st.sidebar.selectbox("Sélectionnez l'indice de l'observation à expliquer", 0, len(X_test)-1, 0)
+    index_to_explain = st.slide("Sélectionnez l'indice de l'observation à expliquer", 0, len(X_test)-1, 0)
 
     # Extraction de l'observation spécifique à expliquer
     observation_to_explain = X_test.iloc[index_to_explain:index_to_explain+1]
