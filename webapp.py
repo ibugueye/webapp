@@ -77,7 +77,7 @@ import pickle
 st.sidebar.title("Sommaire")
 
 pages = ["Contexte du projet", "Exploration des données", "Analyse de données","EDA automatique" ,
-         "MLflow experience"," Modeles Comparés","Modélisation","Choix Classifiers", "Predictions", "shap_explaination", "Outil de Decision"]
+         "MLflow experience"," Modeles Comparés","Modélisation","Choix Classifiers", "Predictions", "shap_explaination", "Outil de Decision", pr]
 
 
 
@@ -521,53 +521,76 @@ elif page==pages[8]:
     # URL of the Flask API
     API_URL = 'https://flask-deploement.onrender.com/predict'  # Adjust this to the URL of your Flask API
 
-    # Interface utilisateur de l'application
-    st.title(" Prédiction de Défaut de Paiement")
+    import streamlit as st
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import shap
+    from sklearn.model_selection import train_test_split
+    import joblib  # Pour charger le modèle
     
-    
-
-    # Collecting input data through sliders in the sidebar
-    
-    st.sidebar.header("Informations sur le client")
-     
-    input_data = {
-        'SK_ID_CURR': st.sidebar.slider('SK_ID_CURR', min_value=100000, max_value=999999, value=100001, step=1),
-        'CNT_CHILDREN': st.sidebar.slider('CNT_CHILDREN', min_value=0, max_value=20, value=0, step=1),
-        'AMT_INCOME_TOTAL': st.sidebar.slider('AMT_INCOME_TOTAL', min_value=20000, max_value=1000000, value=100000, step=1000),
-        'AMT_CREDIT': st.sidebar.slider('AMT_CREDIT', min_value=50000, max_value=2000000, value=500000, step=10000),
-        # Add other features as necessary...
-    }
-
-    # Button to make prediction
-    if st.button('Prédire le risque de défaut'):
-        # Sending the data to the Flask API and getting the prediction
-        response = requests.post(API_URL, json=input_data)
-        if response.status_code == 200:
-            # Extracting the prediction results
-            result = response.json()
-            probabilities = result['probabilities']
-            prediction = result['prediction'][0]  # Assuming the first (and only) prediction
-
-            # Assuming `probabilities` is the probability of default returned by your API
-            probability_of_default = probabilities[0]  # The API returns a list with a single probability value
-            probability_of_no_default = 1 - probability_of_default  # Compute the probability of no default
-
-            # Now `probabilities` should contain both values, matching the length of `categories`
-            probabilities = [probability_of_no_default, probability_of_default]
-
-            # Displaying the results in two columns
-            col1, col2 = st.columns(2)
-            with col1:
-                st.subheader("Résultat de la prédiction :")
-                result_message = "Le client sera en défaut de paiement." if prediction == 1 else "Le client ne sera pas en défaut de paiement."
-                st.write(result_message)
-
-                st.subheader("Probabilités :")
-                # Plotting the probability as a bar chart
-                categories = ['Pas de défaut', 'Défaut']
-                fig = px.bar(x=categories, y=probabilities, labels={'x': '', 'y': 'Probabilité'}, title="Probabilité de Défaut de Paiement")
-                st.plotly_chart(fig)
-      
+        # Chargement du modèle sérialisé
+        model_path = 'best_model.joblib'
+        pipeline = joblib.load(model_path)
+        
+            # Extraire le modèle de classification du pipeline
+            
+        
+        classifier_model = pipeline.named_steps['classifier']
+        
+            # Préparation des données (comme précédemment)
+        df = pd.read_csv('df_final.csv')  # Remplacez par votre chemin de fichier correct
+        X = df.drop(columns=['TARGET'])
+        y = df['TARGET']
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+            
+            # Initialiser l'explainer SHAP avec le modèle extrait
+        explainer = shap.Explainer(classifier_model, X_train)
+            # Calcul des valeurs SHAP pour l'ensemble d'entraînement (pour les explications globales)
+        shap_values = explainer(X_train)
+        
+            # Interface Streamlit
+        st.title("Prédiction de Non-Paiement de Prêt ")
+        
+            # Explications globales avec SHAP
+        st.header("Importance Globale des Caractéristiques")
+        fig, ax = plt.subplots()
+        shap.summary_plot(shap_values, X_train, plot_type="bar")
+        st.pyplot(fig)
+        
+        
+        
+        # Création d'un dictionnaire pour mapper SK_ID_CURR à l'indice du DataFrame
+        id_to_index = pd.Series(df.index, index=df['SK_ID_CURR']).to_dict()
+        
+        
+        # Sélection de SK_ID_CURR dans Streamlit
+        selected_sk_id_curr = st.selectbox("# Sélectionnez l'identifiant du client à expliquer", X_test['SK_ID_CURR'].unique())
+        
+        # Trouver l'indice correspondant dans le DataFrame original
+        selected_index = id_to_index[selected_sk_id_curr]
+        
+        observation_to_explain = X_test.loc[selected_index:selected_index]
+            # Sélection de l'indice de l'observation à expliquer par un utilisateur
+         
+        predicted_class =classifier_model .predict(observation_to_explain)[0]
+        probability_of_default = classifier_model.predict_proba(observation_to_explain)[0, 1]  # Probabilité de défaut de paiement
+        
+            # Affichage des résultats
+        st.write(f"Prédiction  : {'Non-Paiement  Risk' if predicted_class else 'Paiement no Risk '}")
+        st.write(f"Probabilité de non-paiement: {probability_of_default:.4f}")
+        
+        # Décision basée sur un seuil spécifique
+        decision_threshold = 0.428  # Ajustez ce seuil selon vos critères
+        loan_decision = "Prêt Accordé" if probability_of_default < decision_threshold else "Prêt Refusé"
+        st.write(f"Décision du prêt basée sur le seuil de probabilité de {decision_threshold}: {loan_decision}")
+        
+            # Affichage des explications SHAP pour l'observation sélectionnée
+        st.header(f"Explications SHAP local ")
+        shap_values_observation = explainer(observation_to_explain)
+        fig, ax = plt.subplots()
+        shap.plots.waterfall(shap_values_observation[0], max_display=10)
+        st.pyplot(fig)
+          
 
 elif page==pages[9]: 
     
@@ -677,7 +700,20 @@ elif page==pages[10]:
                 ax.set_xticks(x)
                 ax.set_xticklabels(labels)
                 ax.legend()
-                
+
+
+
+           
                 st.pyplot(fig)
         else:
             st.error("Une erreur s'est produite lors de l'obtention de la prédiction.")
+
+
+
+elif page==pages[11]:
+ 
+
+
+ 
+    
+    
