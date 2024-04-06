@@ -175,7 +175,7 @@ def outil_decision(df, df_train):
 
     # Interface Streamlit
     st.title("Prédiction de Non-Paiement de Prêt avec le Meilleur Modèle")
-
+t
     # Explications globales avec SHAP
     st.header("Importance Globale des Caractéristiques")
     fig, ax = plt.subplots()
@@ -183,7 +183,7 @@ def outil_decision(df, df_train):
     st.pyplot(fig)
 
     # Sélection de l'indice de l'observation à expliquer par un utilisateur
-    index_to_explain = st.slider("Sélectionnez l'indice de l'observation à expliquer", 0, len(X_test)-1, 0)
+    index_to_explain = st.sidebar.selectbox("Sélectionnez l'indice de l'observation à expliquer", 0, len(X_test)-1, 0)
 
     # Extraction de l'observation spécifique à expliquer
     observation_to_explain = X_test.iloc[index_to_explain:index_to_explain+1]
