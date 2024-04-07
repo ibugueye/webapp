@@ -44,7 +44,7 @@ if response.status_code == 200:
             # Partie 2 : Affichage des informations de prédiction
             decision_threshold = 0.44
             probability = float(prediction_data['probability'])
-            loan_decision = "Prêt Accordé" if probability > decision_threshold else "Prêt Refusé"
+            loan_decision = "Prêt Accordé" if probability < decision_threshold else "Prêt Refusé"
             st.write(f"Prédiction : {prediction_data['prediction']}, Probabilité : {probability:.2f}")
             st.write(f"Décision basée sur le seuil de {decision_threshold} : ")
 
@@ -87,7 +87,7 @@ if response.status_code == 200:
                 
                 
         with col3:
-                st.write("Comparaiso, des caracteristuqes clients avec la moyenne")
+             
                 # Création de la visualisation
                 fig, ax = plt.subplots()
                 labels = ["Enfants", "Revenu", "Crédit", "Annuité"]
@@ -96,8 +96,8 @@ if response.status_code == 200:
                 
                 x = range(len(labels))  # les labels de l'axe x
                 
-                ax.bar(x, client_values, width=0.4, label='Client', align='center')
-                ax.bar(x, mean_values, width=0.4, label='Moyenne', align='edge')
+                ax.bar(x, client_values, width=0.5, label='Client', align='center')
+                ax.bar(x, mean_values, width=0.5, label='Moyenne', align='edge')
                 
                 ax.set_xlabel('Caractéristiques')
                 ax.set_ylabel('Valeurs')
