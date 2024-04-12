@@ -24,7 +24,7 @@ Le dashboard interactif devra contenir au minimum les fonctionnalités suivantes
 
 ## Dashboard client : 
 
-(https://webapp-1-4ouf.onrender.com/)
+https://webapp-1-4ouf.onrender.com/
 
  ## Données : 
  Concours Kaggle Home Credit Default Risk
