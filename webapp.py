@@ -96,8 +96,8 @@ elif page==pages[1]:
     st.write("### Exploration des données ")
     st.dataframe(df.head())
     st.write("Dimensions du dataFrame : ")
-    st.write("Nombre de lignes : " ,  df.shape[0])
-    st.write("Nombre de colonnes : ",df.shape[1])
+    st.write("Nombre de lignes : " ,  df_train.shape[0])
+    st.write("Nombre de colonnes : ",df_train.shape[1])
     st.write("Missing values")
     # La fonction pour calculer les valeurs manquantes
     def missing_values_table(df_train):
@@ -119,9 +119,9 @@ elif page==pages[1]:
     st.table(missing_values)
     
     if st.checkbox("Afficher les valeurs manquantes"):
-        st.write("Nombre de missing value : ",df.isna().sum().sum())
+        st.write("Nombre de missing value : ",df_train.isna().sum().sum())
     if st.checkbox("Afficher les doublons"):
-        st.write("Nombre de doublons ",df.duplicated().sum())
+        st.write("Nombre de doublons ",df_train.duplicated().sum())
        
         
         
