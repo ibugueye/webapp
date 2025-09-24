@@ -85,7 +85,7 @@ pages = ["Contexte du projet", "Exploration des données", "Analyse de données"
 page = st.sidebar.radio("Aller vers la page :", pages)
 df_train = pd.read_csv("data/application_train.csv")
 df_test = pd.read_csv("data/application_test.csv")
-df = pd.read_csv("df_final.csv")
+df = pd.read_csv("sample_application_train.csv")
 df["CODE_GENDER"].fillna(0, inplace=True)
 if page == pages[0]:
     st.write('### Contexte du projet')
@@ -717,3 +717,4 @@ elif page==pages[11]:
  
     
     
+
